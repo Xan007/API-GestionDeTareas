@@ -17,26 +17,21 @@ async function checkIdParam(req, res, next) {
 
 const router = Router()
 
-//TO DO: Con next()
-//userHasRole
-
 //Obtener todas las tareas
-//Añadir una ruta para admins
-
 router.get("/", verifyToken, checkRole("user"), async(req, res) => {
     const tasks = await Task.find({creatorId: req.id})
 
     res.send(tasks)
 })
 
-router.get("/all", verifyToken, checkRole("admin"), async(req, res) => {
+//Obtener todas las tareas de todos
+router.get("/all", verifyToken, checkRole("admin", "moderator"), async(req, res) => {
     const tasks = await Task.find()
 
     res.send(tasks)
 })
 
 //Obtener tarea con id
-//Añadir ruta para usuarios y para admins
 router.get("/:id", verifyToken, checkRole("user"), checkIdParam, async(req, res) => {
     const { id } = req.params
 
@@ -68,7 +63,6 @@ router.get("/search", verifyToken, checkRole("user"), validateSearch, async(req,
 })
 
 //Eliminar tarea
-//Añadir ruta para usuarios
 router.delete("/:id", verifyToken, checkRole("user"), checkIdParam, async(req, res) => {
     const { id } = req.params
     let task = null
