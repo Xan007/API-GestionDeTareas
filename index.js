@@ -1,10 +1,10 @@
 import express from "express"
 import dotenv from "dotenv"
 import router from "./routes/index.js"
+dotenv.config()
+
 import "./db.js"
 import "./initialSetup.js"
-
-dotenv.config()
 
 const app = express()
 app.use(express.json())
