@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import { checkRole, verifyToken } from "../middleware/auth.js"
+import { checkRole, verifyToken, userHasRole } from "../middleware/auth.js"
 import { validateCreation, validateSearch } from "../validators/tasks.js"
 
 import Task from "../models/task.js"
@@ -29,12 +29,24 @@ router.get("/", verifyToken, checkRole("user"), async(req, res) => {
     res.send(tasks)
 })
 
+router.get("/all", verifyToken, checkRole("admin"), async(req, res) => {
+    const tasks = await Task.find()
+
+    res.send(tasks)
+})
+
 //Obtener tarea con id
 //Añadir ruta para usuarios y para admins
-router.get("/:id", verifyToken, checkRole("admin"), checkIdParam, async(req, res) => {
+router.get("/:id", verifyToken, checkRole("user"), checkIdParam, async(req, res) => {
     const { id } = req.params
 
-    const task = await Task.findById(id)
+    let task = null
+
+    if (userHasRole(req.id, "admin", "moderator"))
+        task = await Task.findById(id)
+    else {
+        task = await Task.find({_id: id, creatorId: id})
+    }
     if (!task)
         return res.status(404).send(`No se encontro una task con el id: ${id}`)
     res.send(task)
@@ -57,10 +69,16 @@ router.get("/search", verifyToken, checkRole("user"), validateSearch, async(req,
 
 //Eliminar tarea
 //Añadir ruta para usuarios
-router.delete("/:id", verifyToken, checkRole("admin"), checkIdParam, async(req, res) => {
+router.delete("/:id", verifyToken, checkRole("user"), checkIdParam, async(req, res) => {
     const { id } = req.params
-    
-    const task = await Task.findOneAndDelete(id)
+    let task = null
+
+    if (userHasRole(req.id, "admin", "moderator")) {
+        task = await Task.findOneAndDelete({_id: id})    
+    } else {
+        task = await Task.findOneAndDelete({ creatorId: req.id, _id: id })
+    }
+
     if (!task)
         return res.status(404).send(`No se encontro una tara con la id: ${id}`)
 
@@ -68,11 +86,17 @@ router.delete("/:id", verifyToken, checkRole("admin"), checkIdParam, async(req, 
 })
 
 //Actualizar una tarea
-//Añadir ruta para usuarios
-router.put("/", verifyToken, checkRole("admin", "user"), async(req, res) => {
+router.put("/", verifyToken, checkRole("user"), async(req, res) => {
     const { id, title, body, difficulty, category } = req.body
+    
+    let task = null
+    
+    if (userHasRole(req.id, "admin", "moderator")) {
+        task = await Task.findById(id)
+    } else {
+        task = await Task.find({ creatorId: req.id, _id: id })
+    }
 
-    const task = await Task.findById(id)
     if (!task) 
         return res.status(400).send(`No se encontro una task con la id: ${id}`)
 
