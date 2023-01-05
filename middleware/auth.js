@@ -28,7 +28,7 @@ export const signToken = (user) => {
     })
 }
 
-export const userHasRole = async (...roles) => {
+export const userHasRole = async (user_id, ...roles) => {
     let role_ids = []
 
     for (const roleName of roles) {
@@ -39,14 +39,14 @@ export const userHasRole = async (...roles) => {
         }
     }
 
-    const user = await User.findOne({ _id: req.id, roles: { $in: role_ids } })
+    const user = await User.findOne({ _id: user_id, roles: { $in: role_ids } })
 
     return user
 }
 
 export const checkRole = (...roles) => {
     return async function (req, res, next) {
-        const user = userHasRole(...roles)
+        const user = userHasRole(req.id, ...roles)
 
         if (user)
             return next()
