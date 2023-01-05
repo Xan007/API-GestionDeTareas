@@ -51,6 +51,6 @@ export const checkRole = (...roles) => {
         if (user)
             return next()
 
-        res.status(400).send("You don't have permissions")
+        res.status(400).send(`Endpoint only for: ${roles.join(", ")}`)
     }
 }
