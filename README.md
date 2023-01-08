@@ -1,11 +1,7 @@
-# API-GestionDeTareas
+# Una API para Gestión de Tareas
 
-TO-DO:
-  Documentation
-  Readme
-
-packages used:
-1. express
-2. express-validator
-3. jsonwebtoken
-4. mongoose
+Tecnologías usadas:
+1. Node JS
+2. Express
+3. MongoDB
+4. JWT (Jsonwebtoken)
